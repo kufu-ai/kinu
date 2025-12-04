@@ -123,11 +123,83 @@ $ curl -X POST -F sandbox_id=db4f1509-e2f5-40a7-9944-a6b0024f2a24 -F name=foods 
 
 ### Endpoints
 
-now writing
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/images/:type/:geometry/:filename` | 画像の取得（リサイズ・トリミング対応） |
+| POST | `/upload` | 画像のアップロード |
+| POST | `/sandbox` | サンドボックスへの一時アップロード |
+| POST | `/sandbox/attach` | サンドボックスから実画像への確定 |
+| GET | `/version` | バージョン情報の取得 |
+| GET | `/worker/stats` | ワーカー統計情報の取得 |
 
 ### Image resize query
 
-now writing
+画像取得エンドポイント `GET /images/:type/:geometry/:filename` のパラメータ詳細です。
+
+#### Path Parameters
+
+| Parameter | Type | Description | Example |
+|-----------|------|-------------|---------|
+| `type` | string | 画像カテゴリー（リソース分類名） | `foods`, `products` |
+| `geometry` | string | リサイズ・トリミング条件（後述） | `w=280,h=300` |
+| `filename` | string | ファイル名＋拡張子 | `123.jpg`, `456.png` |
+
+**Supported extensions**: `jpg`, `jpeg`, `png`, `webp`, `gif`, `data` (Data URI format)
+
+#### Geometry Parameters
+
+`geometry` は `key=value` をカンマで連結した形式です。**指定順序が固定**されています。
+
+```
+w → h → q → c → mc → wo → ho → cw → ch → aw → o → m
+```
+
+| Key | Type | Description | Default | Example |
+|-----|------|-------------|---------|---------|
+| `w` | int | リサイズ後の幅（px） | - | `w=280` |
+| `h` | int | リサイズ後の高さ（px） | - | `h=300` |
+| `q` | int | JPEG品質（0-100） | 80 | `q=85` |
+| `c` | bool | 自動トリミング（Auto Crop） | false | `c=true` |
+| `mc` | bool | 手動トリミング（Manual Crop） | false | `mc=true` |
+| `wo` | int | 幅方向オフセット（mc時） | 0 | `wo=10` |
+| `ho` | int | 高さ方向オフセット（mc時） | 0 | `ho=20` |
+| `cw` | int | トリミング領域の幅（mc時必須） | - | `cw=200` |
+| `ch` | int | トリミング領域の高さ（mc時必須） | - | `ch=150` |
+| `aw` | int | 想定画像幅（mc時必須） | - | `aw=300` |
+| `o` | bool | オリジナル画像を返す | false | `o=true` |
+| `m` | string | 中間画像サイズ | - | `m=1000` |
+
+**`m` valid values**: `"true"`, `"original"`, `"1000"`, `"2000"`, `"3000"`
+
+#### Required Conditions
+
+- `w`, `h`, `o=true`, `m` のいずれかが必要
+- `mc=true` の場合は `cw`, `ch`, `aw` が全て必要
+
+#### Examples
+
+```shell
+# 基本的なリサイズ（幅280、高さ300）
+$ curl http://localhost/images/foods/w=280,h=300/1.jpg
+
+# 品質指定付きリサイズ
+$ curl http://localhost/images/foods/w=280,h=300,q=85/1.jpg
+
+# 自動トリミング＋リサイズ
+$ curl http://localhost/images/foods/w=280,h=300,c=true/1.jpg
+
+# 手動トリミング
+$ curl http://localhost/images/foods/w=200,h=150,mc=true,wo=10,ho=20,cw=200,ch=150,aw=300/1.jpg
+
+# オリジナル画像を取得
+$ curl http://localhost/images/foods/o=true/1.jpg
+
+# 中間画像サイズを指定して取得
+$ curl http://localhost/images/foods/m=1000/1.jpg
+
+# Data URI形式で取得（拡張子を .data に）
+$ curl http://localhost/images/foods/w=280,h=300/1.data
+```
 
 ### Environment variables
 
