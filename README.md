@@ -157,6 +157,16 @@ now writing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/tokubai/kinu
 
+### Test
+
+Tests run in a Docker container with ImageMagick 6, so only Docker is required.
+
+```
+$ bin/test                                  # go test -v ./resizer/
+$ bin/test ./resizer/ -run TestParseGeometry # arguments are passed to go test
+$ GO_IMAGE=golang:1.16-bullseye bin/test    # run with another Go image
+```
+
 ## Thanks
 
 - [Issei Naruta](https://github.com/mirakui)
