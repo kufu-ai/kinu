@@ -7,7 +7,7 @@
 #   GO_IMAGE=golang:1.16-bullseye bin/test
 set -e
 
-GO_IMAGE="${GO_IMAGE:-golang:1.27.3-bookworm}"
+GO_IMAGE="${GO_IMAGE:-golang:1.27.4-bookworm}"
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 if [ $# -eq 0 ]; then
