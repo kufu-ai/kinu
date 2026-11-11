@@ -1,0 +1,51 @@
+#!/bin/bash
+# Run go test inside a golang container with ImageMagick 6 installed.
+#
+# Usage:
+#   bin/test                      # go test -v ./resizer/
+#   bin/test ./resizer/ -run Geo  # arguments are passed to go test
+#   GO_IMAGE=golang:1.16-bullseye bin/test
+set -e
+
+GO_IMAGE="${GO_IMAGE:-golang:1.27.3-bookworm}"
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+if [ $# -eq 0 ]; then
+  set -- ./resizer/
+fi
+
+# Runs inside the container.
+CONTAINER_SCRIPT='
+set -e
+
+install_deps() {
+  apt-get install -y -qq libmagickwand-dev pkg-config > /dev/null
+}
+
+use_archive() {
+  # EOL releases have moved to archive.debian.org.
+  codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
+  rm -f /etc/apt/sources.list.d/*
+  echo "deb http://archive.debian.org/debian ${codename} main" > /etc/apt/sources.list
+  echo "deb http://archive.debian.org/debian-security ${codename}-security main" >> /etc/apt/sources.list
+  apt-get update -qq
+}
+
+if ! { apt-get update -qq && install_deps; } 2>/dev/null; then
+  use_archive
+  install_deps
+fi
+
+go version
+echo "MagickWand $(pkg-config --modversion MagickWand)"
+
+# -vet=off: logger has existing vet warnings that would stop go test.
+go test -vet=off -count=1 -v "$@"
+'
+
+docker run --rm \
+  -e KINU_RESIZE_ENGINE=ImageMagick \
+  -v "$ROOT_DIR":/src \
+  -w /src \
+  "$GO_IMAGE" \
+  bash -c "$CONTAINER_SCRIPT" bash "$@"
