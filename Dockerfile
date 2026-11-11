@@ -29,11 +29,11 @@ RUN wget https://github.com/ImageMagick/ImageMagick6/archive/refs/tags/${IMAGE_M
     cd ImageMagick6-${IMAGE_MAGICK_VERSION} && ./configure &&  make  && make install && ldconfig && \
     rm -rf /tmp/*
 
-ENV GOLANG_VERSION 1.27.3
+ENV GOLANG_VERSION 1.27.4
 ENV GOROOT /usr/local/go
 ENV GOPATH /usr/local/go/vendor
 
-ENV KINU_VERSION 1.0.3
+ENV KINU_VERSION 1.0.4
 ENV KINU_BIND 0.0.0.0:80
 ENV KINU_LOG_LEVEL info
 ENV KINU_LOG_FORMAT ltsv
